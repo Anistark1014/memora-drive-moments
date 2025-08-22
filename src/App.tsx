@@ -12,6 +12,8 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import App from "./pages/App";
 import Albums from "./pages/Albums";
+import AlbumDetail from "./pages/AlbumDetail";
+import AlbumEdit from "./pages/AlbumEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +38,8 @@ const AppComponent = () => (
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/app" element={<App />} />
                   <Route path="/albums" element={<Albums />} />
+                  <Route path="/albums/:id" element={<AlbumDetail />} />
+                  <Route path="/albums/:id/edit" element={<AlbumEdit />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

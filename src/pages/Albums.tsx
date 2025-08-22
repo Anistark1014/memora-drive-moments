@@ -107,44 +107,45 @@ const Albums = () => {
             <Card 
               key={album.id} 
               className="cursor-pointer hover:shadow-lg transition-shadow"
-              onClick={() => navigate(`/albums/${album.id}`)}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2 truncate">
-                    <Folder className="h-5 w-5 text-primary" />
-                    {album.title}
-                  </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      // TODO: Add album settings menu
-                    }}
-                  >
-                    <Settings className="h-4 w-4" />
-                  </Button>
-                </div>
-                {album.description && (
-                  <CardDescription className="line-clamp-2">
-                    {album.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(album.created_at).toLocaleDateString()}
+              <div onClick={() => navigate(`/albums/${album.id}`)}>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 truncate">
+                      <Folder className="h-5 w-5 text-primary" />
+                      {album.title}
+                    </CardTitle>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        navigate(`/albums/${album.id}/edit`)
+                      }}
+                    >
+                      <Settings className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Users className="h-4 w-4" />
-                    {album.privacy === 'private' ? 'Private' : 'Shared'}
+                  {album.description && (
+                    <CardDescription className="line-clamp-2">
+                      {album.description}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      {new Date(album.created_at).toLocaleDateString()}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-4 w-4" />
+                      {album.privacy === 'private' ? 'Private' : 'Shared'}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
           ))}
         </div>
