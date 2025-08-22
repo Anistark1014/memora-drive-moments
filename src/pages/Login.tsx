@@ -1,14 +1,29 @@
-import { Link } from "react-router-dom"
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/hooks/useAuth"
 
 const Login = () => {
-  const handleSubmit = (e: React.FormEvent) => {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const { signIn } = useAuth()
+  const navigate = useNavigate()
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement Supabase auth
-    alert("Please connect to Supabase to enable authentication.")
+    setLoading(true)
+    
+    const { error } = await signIn(email, password)
+    
+    if (!error) {
+      navigate("/app")
+    }
+    
+    setLoading(false)
   }
 
   return (
@@ -28,6 +43,8 @@ const Login = () => {
                 id="email"
                 type="email"
                 placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -36,11 +53,13 @@ const Login = () => {
               <Input
                 id="password"
                 type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              Sign In
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
           
