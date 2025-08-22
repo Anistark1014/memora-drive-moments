@@ -1,9 +1,10 @@
+
 import { useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useAuth } from "@/hooks/useAuth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, Image, Users, Settings } from "lucide-react"
+import { Plus, Image, Users, Settings, Folder } from "lucide-react"
 
 const App = () => {
   const { user, loading, signOut } = useAuth()
@@ -43,7 +44,7 @@ const App = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <Card className="cursor-pointer hover:shadow-lg transition-shadow">
+        <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => navigate("/albums")}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
@@ -98,13 +99,19 @@ const App = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
-            <CardTitle>Your Albums</CardTitle>
-            <CardDescription>No albums yet</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Folder className="h-5 w-5" />
+              Your Albums
+            </CardTitle>
+            <CardDescription>Manage your photo collections</CardDescription>
           </CardHeader>
           <CardContent>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm mb-4">
               Create your first album to start organizing your photos and videos.
             </p>
+            <Button onClick={() => navigate("/albums")} className="w-full">
+              Go to Albums
+            </Button>
           </CardContent>
         </Card>
 
