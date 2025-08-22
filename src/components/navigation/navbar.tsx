@@ -1,108 +1,121 @@
-import { useState } from "react"
-import { Link, useLocation } from "react-router-dom"
-import { Camera, Menu, X } from "lucide-react"
-import { motion, AnimatePresence } from "framer-motion"
-
+import { Menu, X, Image, User, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useAuth } from "@/hooks/useAuth"
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
 
-export function Navbar() {
+export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
-  const location = useLocation()
+  const { user, signOut, loading } = useAuth()
+  const navigate = useNavigate()
 
-  const isHomePage = location.pathname === "/"
-
-  const navItems = [
-    { href: "/features", label: "Features" },
-    { href: "/pricing", label: "Pricing" },
-    { href: "/about", label: "About" },
-  ]
+  const handleSignOut = async () => {
+    await signOut()
+    navigate("/")
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center space-x-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-            <Camera className="h-5 w-5 text-primary-foreground" />
-          </div>
-          <span className="font-serif text-xl font-semibold">Memora</span>
-        </Link>
-
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex md:items-center md:space-x-6">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              to={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+        <div className="flex items-center space-x-2">
+          <Image className="h-8 w-8 text-primary" />
+          <span className="text-xl font-serif font-bold text-foreground">Memora</span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
-          
-          {isHomePage && (
-            <div className="hidden md:flex md:items-center md:space-x-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link to="/login">Sign In</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link to="/signup">Get Started</Link>
-              </Button>
-            </div>
+          {!loading && (
+            user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user.email?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  className="text-foreground border-border hover:bg-accent"
+                  asChild
+                >
+                  <Link to="/login">Sign In</Link>
+                </Button>
+                <Button 
+                  className="bg-primary text-primary-foreground hover:bg-primary/90"
+                  asChild
+                >
+                  <Link to="/signup">Get Started</Link>
+                </Button>
+              </>
+            )
           )}
+        </div>
 
-          {/* Mobile menu button */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="md:hidden"
-            onClick={() => setIsOpen(!isOpen)}
-            aria-label="Toggle menu"
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+        {/* Mobile Navigation */}
+        <div className="md:hidden">
+          <Sheet open={isOpen} onOpenChange={setIsOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="text-foreground">
+                {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="flex flex-col space-y-4 mt-8">
+                <ThemeToggle />
+                {!loading && (
+                  user ? (
+                    <Button 
+                      variant="outline" 
+                      className="text-foreground border-border hover:bg-accent w-full"
+                      onClick={() => {
+                        handleSignOut()
+                        setIsOpen(false)
+                      }}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Sign Out
+                    </Button>
+                  ) : (
+                    <>
+                      <Button 
+                        variant="outline" 
+                        className="text-foreground border-border hover:bg-accent w-full"
+                        asChild
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link to="/login">Sign In</Link>
+                      </Button>
+                      <Button 
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 w-full"
+                        asChild
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Link to="/signup">Get Started</Link>
+                      </Button>
+                    </>
+                  )
+                )}
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="border-t border-border/40 bg-background md:hidden"
-          >
-            <div className="container space-y-2 py-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  className="block px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-                  onClick={() => setIsOpen(false)}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              
-              {isHomePage && (
-                <div className="flex flex-col space-y-2 pt-4">
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/login" onClick={() => setIsOpen(false)}>Sign In</Link>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <Link to="/signup" onClick={() => setIsOpen(false)}>Get Started</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </nav>
   )
 }

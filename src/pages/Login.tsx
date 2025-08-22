@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/hooks/useAuth"
+import { Loader2 } from "lucide-react"
 
 const Login = () => {
   const [email, setEmail] = useState("")
@@ -20,7 +21,7 @@ const Login = () => {
     const { error } = await signIn(email, password)
     
     if (!error) {
-      navigate("/app")
+      navigate("/")
     }
     
     setLoading(false)
@@ -59,7 +60,8 @@ const Login = () => {
               />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Signing in..." : "Sign In"}
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Sign In
             </Button>
           </form>
           
