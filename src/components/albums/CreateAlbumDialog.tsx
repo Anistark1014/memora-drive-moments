@@ -38,6 +38,8 @@ const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
   description: z.string().max(500, "Description must be less than 500 characters").optional(),
   privacy: z.enum(["private", "public", "unlisted"]),
+  directory: z.string().min(1, "Directory is required"),
+  images: z.any().optional(),
 })
 
 interface CreateAlbumDialogProps {
@@ -57,6 +59,8 @@ export function CreateAlbumDialog({ open, onOpenChange, onSuccess }: CreateAlbum
       title: "",
       description: "",
       privacy: "private",
+      directory: "",
+      images: undefined,
     },
   })
 
@@ -65,16 +69,33 @@ export function CreateAlbumDialog({ open, onOpenChange, onSuccess }: CreateAlbum
 
     setIsSubmitting(true)
     try {
-      const { error } = await supabase
+      // Insert album with directory info
+      const { data: albumData, error: albumError } = await supabase
         .from('albums')
         .insert({
           title: values.title,
           description: values.description || null,
           privacy: values.privacy,
           user_id: user.id,
+          directory: values.directory,
         })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (albumError) throw albumError
+
+      // Upload images if any
+      if (values.images && values.images.length > 0 && albumData?.id) {
+        for (let i = 0; i < values.images.length; i++) {
+          const file = values.images[i]
+          const filePath = `${values.directory}/${file.name}`
+          const { error: uploadError } = await supabase.storage
+            .from('album-media')
+            .upload(filePath, file)
+          if (uploadError) throw uploadError
+          // Optionally, insert media record in DB here
+        }
+      }
 
       toast({
         title: "Album created",
@@ -107,6 +128,7 @@ export function CreateAlbumDialog({ open, onOpenChange, onSuccess }: CreateAlbum
         
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+
             <FormField
               control={form.control}
               name="title"
@@ -162,6 +184,60 @@ export function CreateAlbumDialog({ open, onOpenChange, onSuccess }: CreateAlbum
                   </Select>
                   <FormDescription>
                     You can change this later in album settings.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="directory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Choose Album Directory *</FormLabel>
+                  <FormControl>
+                    {/* Use native input for directory selection */}
+                    <input
+                      type="file"
+                      multiple
+                      // @ts-ignore
+                      webkitdirectory="true"
+                      directory="true"
+                      onChange={e => {
+                        const files = e.target.files;
+                        if (files && files.length > 0) {
+                          // Get the directory name from the first file's path
+                          const firstFile = files[0];
+                          const path = (firstFile as any).webkitRelativePath || firstFile.name;
+                          const dirName = path.split('/')[0];
+                          field.onChange(dirName);
+                          // Also set images field to all files in the directory
+                          form.setValue('images', files);
+                        }
+                      }}
+                      style={{ display: 'block', width: '100%' }}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Select a folder from your device. All images inside will be added to the album.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upload Images</FormLabel>
+                  <FormControl>
+                    <Input type="file" multiple accept="image/*" onChange={e => field.onChange(e.target.files)} />
+                  </FormControl>
+                  <FormDescription>
+                    Select images from your local storage to add to this album.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
